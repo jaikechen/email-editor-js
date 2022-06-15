@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Editor.js 🤩🧦🤨 example</title>
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+    <link href="../assets/demo.css" rel="stylesheet">
+    <script src="../assets/json-preview.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+</head>
+<body>
+<div class="ce-example">
+    <div class="ce-example__header">
+        <a class="ce-example__header-logo" href="https://codex.so/editor">Editor.js 🤩🧦🤨</a>
+
+        <div class="ce-example__header-menu">
+            <a href="https://github.com/editor-js" target="_blank">Plugins</a>
+            <a href="https://editorjs.io/usage" target="_blank">Usage</a>
+            <a href="https://editorjs.io/configuration" target="_blank">Configuration</a>
+            <a href="https://editorjs.io/creating-a-block-tool" target="_blank">API</a>
+        </div>
+    </div>
+    <div class="ce-example__content _ce-example__content--small">
+        <div id="editorjs"></div>
+
+        <div class="ce-example__button" id="saveButton">
+            editor.save()
+        </div>
+        <div class="ce-example__statusbar">
+            Readonly:
+            <b id="readonly-state">
+                Off
+            </b>
+            <div class="ce-example__statusbar-button" id="toggleReadOnlyButton">
+                toggle
+            </div>
+        </div>
+        <div id="output"></div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script><!-- Header -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest"></script><!-- Image -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script><!-- Delimiter -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script><!-- List -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script><!-- Checklist -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script><!-- Quote -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script><!-- Code -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script><!-- Embed -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script><!-- Table -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script><!-- Link -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script><!-- Warning -->
+
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script><!-- Marker -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script><!-- Inline Code -->
+
+<!-- Load Editor.js's Core -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
+<script>
+    var editor = new EditorJS({
+        readOnly: false,
+        holder: 'editorjs',
+        tools: {
+            header: {
+                class: Header,
+                inlineToolbar: ['marker', 'link'],
+                config: {
+                    placeholder: 'Header'
+                },
+                shortcut: 'CMD+SHIFT+H'
+            },
+            image: SimpleImage,
+            list: {
+                class: List,
+                inlineToolbar: true,
+                shortcut: 'CMD+SHIFT+L'
+            },
+
+            checklist: {
+                class: Checklist,
+                inlineToolbar: true,
+            },
+
+            quote: {
+                class: Quote,
+                inlineToolbar: true,
+                config: {
+                    quotePlaceholder: 'Enter a quote',
+                    captionPlaceholder: 'Quote\'s author',
+                },
+                shortcut: 'CMD+SHIFT+O'
+            },
+
+            warning: Warning,
+
+            marker: {
+                class:  Marker,
+                shortcut: 'CMD+SHIFT+M'
+            },
+
+            code: {
+                class:  CodeTool,
+                shortcut: 'CMD+SHIFT+C'
+            },
+
+            delimiter: Delimiter,
+
+            inlineCode: {
+                class: InlineCode,
+                shortcut: 'CMD+SHIFT+C'
+            },
+            linkTool: {
+                class: LinkTool,
+                config: {
+                    endpoint: '/fetchUrl', // Your backend endpoint for url data fetching,
+                }
+            },
+            embed: Embed,
+            table: {
+                class: Table,
+                inlineToolbar: true,
+                shortcut: 'CMD+ALT+T'
+            },
+
+        },
+        data: {
+            blocks: [
+                {
+                    type: "header",
+                    data: {
+                        text: "Editor.js",
+                        level: 2
+                    }
+                }
+            ]
+        },
+        onReady: function(){
+            //saveButton.click();
+        },
+        onChange: function(api, event) {
+        }
+    });
+
+    const saveButton = document.getElementById('saveButton');
+    const toggleReadOnlyButton = document.getElementById('toggleReadOnlyButton');
+    const readOnlyIndicator = document.getElementById('readonly-state');
+    saveButton.addEventListener('click', function () {
+        editor.save()
+            .then((savedData) => {
+                console.log(savedData)
+                axios.post('/save',savedData).then( (res)=>{
+                    document.getElementById('output').innerHTML = res.data.html
+                })
+            })
+            .catch((error) => {
+                console.error('Saving error', error);
+            });
+    });
+    toggleReadOnlyButton.addEventListener('click', async () => {
+        const readOnlyState = await editor.readOnly.toggle();
+
+        readOnlyIndicator.textContent = readOnlyState ? 'On' : 'Off';
+    });
+</script>
+
+</body>
+</html>
